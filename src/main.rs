@@ -1,6 +1,6 @@
 use std::env;
 use std::process;
-use thirteen_limit_johnston::note_name;
+use thirty_one_limit_johnston::note_name;
 
 fn main() {
     let args: Vec<String> = env::args().collect();

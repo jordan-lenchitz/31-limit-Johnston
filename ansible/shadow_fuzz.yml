@@ -4,7 +4,7 @@
   connection: local
   gather_facts: false
   vars:
-    binary_path: "{{ playbook_dir }}/../target/debug/thirteen-limit-johnston"
+    binary_path: "{{ playbook_dir }}/../target/debug/thirty-one-limit-johnston"
     canonical_ratios:
       - "1/1"
       - "3/2"
