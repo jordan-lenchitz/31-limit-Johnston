@@ -9,22 +9,27 @@
 ## usage
 ```bash
 cargo run -- 49/55
-# output cb77v+
+# output Cb77v+
 
 cargo run -- 3 2
-# output g
+# output G
+
+cargo run -- 23/16
+# output F#23+
 ```
 
 ## johnston notation symbols
 
-outputs consist of a letter name plus some combination of `#b7l^v3e+-`
+outputs consist of a letter name plus some combination of `#b7L^v3e+-` and the higher-limit prime symbols `17`, `19`, `23`, `29`, `31` (and `v17`, `v19`, `v23`, `v29`, `v31`)
 
 - `# b + -` and `7` correspond directly to their johnston notation symbols
-- `l` = upside down 7
+- `L` = upside down 7
 - `^` = up arrow
 - `v` = down arrow
 - `3` = 13
 - `e` = upside down 13
+- `17`, `19`, `23`, `29`, `31` = 17-, 19-, 23-, 29-, and 31-limit accidentals
+- `v17`, `v19`, `v23`, `v29`, `v31` = upside down 17, 19, 23, 29, and 31
 
 ## references
 
