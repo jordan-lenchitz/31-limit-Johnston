@@ -1,0 +1,312 @@
+{%- set ns = namespace(
+    x=(numerator | int),
+    y=(denominator | int),
+    primes_31=[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31],
+    px={},
+    py={},
+    max_prime=1,
+    temp=0,
+    count=0
+) -%}
+{%- if ns.y == 0 -%}
+denominator cannot be zero
+{%- else -%}
+  {#- Factorize numerator |x| -#}
+  {%- set ns.temp = (ns.x if ns.x >= 0 else -ns.x) -%}
+  {%- for p in ns.primes_31 -%}
+    {%- set ns.count = 0 -%}
+    {%- for _ in range(64) -%}
+      {%- if ns.temp > 0 and (ns.temp % p == 0) -%}
+        {%- set ns.count = ns.count + 1 -%}
+        {%- set ns.temp = ns.temp // p -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if ns.count > 0 -%}
+      {%- set _ = ns.px.update({p: ns.count}) -%}
+      {%- if p > ns.max_prime -%}{%- set ns.max_prime = p -%}{%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- if ns.temp > 1 -%}
+    {%- for d in range(33, 10001, 2) -%}
+      {%- for _ in range(20) -%}
+        {%- if ns.temp > 1 and (ns.temp % d == 0) -%}
+          {%- if d > ns.max_prime -%}{%- set ns.max_prime = d -%}{%- endif -%}
+          {%- set ns.temp = ns.temp // d -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+    {%- if ns.temp > 1 and ns.temp > ns.max_prime -%}
+      {%- set ns.max_prime = ns.temp -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {#- Factorize denominator |y| -#}
+  {%- set ns.temp = (ns.y if ns.y >= 0 else -ns.y) -%}
+  {%- for p in ns.primes_31 -%}
+    {%- set ns.count = 0 -%}
+    {%- for _ in range(64) -%}
+      {%- if ns.temp > 0 and (ns.temp % p == 0) -%}
+        {%- set ns.count = ns.count + 1 -%}
+        {%- set ns.temp = ns.temp // p -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if ns.count > 0 -%}
+      {%- set _ = ns.py.update({p: ns.count}) -%}
+      {%- if p > ns.max_prime -%}{%- set ns.max_prime = p -%}{%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- if ns.temp > 1 -%}
+    {%- for d in range(33, 10001, 2) -%}
+      {%- for _ in range(20) -%}
+        {%- if ns.temp > 1 and (ns.temp % d == 0) -%}
+          {%- if d > ns.max_prime -%}{%- set ns.max_prime = d -%}{%- endif -%}
+          {%- set ns.temp = ns.temp // d -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+    {%- if ns.temp > 1 and ns.temp > ns.max_prime -%}
+      {%- set ns.max_prime = ns.temp -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- if ns.max_prime > 31 -%}
+Sorry - that is a {{ ns.max_prime }}-limit pitch!
+  {%- else -%}
+    {%- set n3  = ns.px.get(3, 0)  - ns.py.get(3, 0) -%}
+    {%- set n5  = ns.px.get(5, 0)  - ns.py.get(5, 0) -%}
+    {%- set n7  = ns.px.get(7, 0)  - ns.py.get(7, 0) -%}
+    {%- set n11 = ns.px.get(11, 0) - ns.py.get(11, 0) -%}
+    {%- set n13 = ns.px.get(13, 0) - ns.py.get(13, 0) -%}
+    {%- set n17 = ns.px.get(17, 0) - ns.py.get(17, 0) -%}
+    {%- set n19 = ns.px.get(19, 0) - ns.py.get(19, 0) -%}
+    {%- set n23 = ns.px.get(23, 0) - ns.py.get(23, 0) -%}
+    {%- set n29 = ns.px.get(29, 0) - ns.py.get(29, 0) -%}
+    {%- set n31 = ns.px.get(31, 0) - ns.py.get(31, 0) -%}
+
+    {#- 3-limit -#}
+    {%- set ns.pm3 = 0 -%}
+    {%- set ns.sf3 = 0 -%}
+    {%- if n3 > 0 -%}
+      {%- for qn in range(n3, 0, -1) -%}
+        {%- if ((qn - 1) % 7) % 3 == 2 -%}{%- set ns.pm3 = ns.pm3 + 1 -%}{%- endif -%}
+        {%- if (qn - 1) % 7 == 5 -%}{%- set ns.sf3 = ns.sf3 + 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- elif n3 < 0 -%}
+      {%- for qn in range(n3, 0) -%}
+        {%- set k_pm = (qn + 1) % 7 -%}
+        {%- if k_pm != 0 and (k_pm % 3 == 0) -%}{%- set ns.pm3 = ns.pm3 - 1 -%}{%- endif -%}
+        {%- set k_sf = qn % 7 -%}
+        {%- if k_sf == 5 -%}{%- set ns.sf3 = ns.sf3 - 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {#- 5-limit -#}
+    {%- set shift3 = n3 % 7 -%}
+    {%- set base_letters = "CGDAEBF" -%}
+    {%- set letters = base_letters[shift3:] ~ base_letters[:shift3] -%}
+    {%- set sfs5_list = [letters[0], letters[4], letters[1], letters[5], letters[2], letters[6], letters[3]] -%}
+    {%- set sfs5 = sfs5_list | join('') -%}
+    {%- set ns.pm5 = 0 -%}
+    {%- set ns.sf5 = 0 -%}
+    {%- if n5 > 0 -%}
+      {%- for qn in range(n5, 0, -1) -%}
+        {%- set ch = sfs5[(qn - 1) % 7] -%}
+        {%- if ch in "AEB" -%}{%- set ns.sf5 = ns.sf5 + 1 -%}
+        {%- elif ch == "D" -%}{%- set ns.sf5 = ns.sf5 + 1 -%}{%- set ns.pm5 = ns.pm5 + 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- elif n5 < 0 -%}
+      {%- for qn in range(n5, 0) -%}
+        {%- set ch = sfs5[(qn + 1) % 7] -%}
+        {%- if ch in "GCD" -%}{%- set ns.sf5 = ns.sf5 - 1 -%}
+        {%- elif ch == "F" -%}{%- set ns.sf5 = ns.sf5 - 1 -%}{%- set ns.pm5 = ns.pm5 - 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {#- 7-limit -#}
+    {%- set pn5 = (4 * n5) % 7 -%}
+    {%- set base7 = "CBAGFED" -%}
+    {%- set shift7 = base7.find(letters[pn5]) -%}
+    {%- set letters7 = base7[shift7:] ~ base7[:shift7] -%}
+    {%- set ns.sf7 = 0 -%}
+    {%- set ns.pm7 = 0 -%}
+    {%- set ns.sl = n7 -%}
+    {%- if n7 > 0 -%}
+      {%- for qn in range(n7, 0, -1) -%}
+        {%- set ch = letters7[(qn - 1) % 7] -%}
+        {%- if ch in "GBD" -%}{%- set ns.pm7 = ns.pm7 + 1 -%}
+        {%- elif ch in "CF" -%}{%- set ns.sf7 = ns.sf7 - 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- elif n7 < 0 -%}
+      {%- for qn in range(n7, 0) -%}
+        {%- set ch = letters7[(qn + 1) % 7] -%}
+        {%- if ch in "CFA" -%}{%- set ns.pm7 = ns.pm7 - 1 -%}
+        {%- elif ch in "BE" -%}{%- set ns.sf7 = ns.sf7 + 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {#- 11-limit -#}
+    {%- set pn7 = n7 % 7 -%}
+    {%- set base11 = "CFBEADG" -%}
+    {%- set shift11 = base11.find(letters7[pn7]) -%}
+    {%- set letters11 = base11[shift11:] ~ base11[:shift11] -%}
+    {%- set ns.sf11 = 0 -%}
+    {%- set ns.pm11 = 0 -%}
+    {%- set ns.ud = n11 -%}
+    {%- if n11 > 0 -%}
+      {%- for qn in range(n11, 0, -1) -%}
+        {%- set ch = letters11[(qn - 1) % 7] -%}
+        {%- if ch == "A" -%}{%- set ns.pm11 = ns.pm11 - 1 -%}
+        {%- elif ch == "F" -%}{%- set ns.sf11 = ns.sf11 - 1 -%}{%- set ns.pm11 = ns.pm11 - 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- elif n11 < 0 -%}
+      {%- for qn in range(n11, 0) -%}
+        {%- set ch = letters11[(qn + 1) % 7] -%}
+        {%- if ch == "D" -%}{%- set ns.pm11 = ns.pm11 + 1 -%}
+        {%- elif ch == "B" -%}{%- set ns.sf11 = ns.sf11 + 1 -%}{%- set ns.pm11 = ns.pm11 + 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {#- 13-limit -#}
+    {%- set pn11 = n11 % 7 -%}
+    {%- set base13 = "CAFDBGE" -%}
+    {%- set shift13 = base13.find(letters11[pn11]) -%}
+    {%- set letters13 = base13[shift13:] ~ base13[:shift13] -%}
+    {%- set ns.sf13 = 0 -%}
+    {%- set ns.pm13 = 0 -%}
+    {%- set ns.e3 = n13 -%}
+    {%- if n13 > 0 -%}
+      {%- for qn in range(n13, 0, -1) -%}
+        {%- set ch = letters13[(qn - 1) % 7] -%}
+        {%- if ch in "CDG" -%}{%- set ns.sf13 = ns.sf13 - 1 -%}
+        {%- elif ch == "F" -%}{%- set ns.sf13 = ns.sf13 - 1 -%}{%- set ns.pm13 = ns.pm13 - 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- elif n13 < 0 -%}
+      {%- for qn in range(n13, 0) -%}
+        {%- set ch = letters13[(qn + 1) % 7] -%}
+        {%- if ch in "EAB" -%}{%- set ns.sf13 = ns.sf13 + 1 -%}
+        {%- elif ch == "D" -%}{%- set ns.sf13 = ns.sf13 + 1 -%}{%- set ns.pm13 = ns.pm13 + 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {#- 17-limit -#}
+    {%- set ns.sf17 = n17 -%}
+    {%- set ns.a17 = n17 -%}
+    {%- set letters17 = letters13 -%}
+    {%- set pn17_shift = n13 % 7 -%}
+
+    {#- 19-limit -#}
+    {%- set base19 = "CEGBDFA" -%}
+    {%- set shift19 = base19.find(letters17[pn17_shift]) -%}
+    {%- set letters19 = base19[shift19:] ~ base19[:shift19] -%}
+    {%- set ns.sf19 = 0 -%}
+    {%- set ns.pm19 = 0 -%}
+    {%- set ns.a19 = n19 -%}
+    {%- if n19 > 0 -%}
+      {%- for qn in range(n19, 0, -1) -%}
+        {%- set ch = letters19[(qn - 1) % 7] -%}
+        {%- if ch in "CFG" -%}{%- set ns.sf19 = ns.sf19 - 1 -%}
+        {%- elif ch == "D" -%}{%- set ns.pm19 = ns.pm19 + 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- elif n19 < 0 -%}
+      {%- for qn in range(n19, 0) -%}
+        {%- set ch = letters19[(qn + 1) % 7] -%}
+        {%- if ch == "F" -%}{%- set ns.pm19 = ns.pm19 - 1 -%}
+        {%- elif ch in "AEB" -%}{%- set ns.sf19 = ns.sf19 + 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {#- 23-limit -#}
+    {%- set pn19 = n19 % 7 -%}
+    {%- set base23 = "CFBEADG" -%}
+    {%- set shift23 = base23.find(letters19[pn19]) -%}
+    {%- set letters23 = base23[shift23:] ~ base23[:shift23] -%}
+    {%- set ns.sf23 = 0 -%}
+    {%- set ns.pm23 = 0 -%}
+    {%- set ns.a23 = n23 -%}
+    {%- if n23 > 0 -%}
+      {%- for qn in range(n23, 0, -1) -%}
+        {%- set ch = letters23[(qn - 1) % 7] -%}
+        {%- if ch == "A" -%}{%- set ns.sf23 = ns.sf23 + 1 -%}
+        {%- elif ch in "CBEDG" -%}{%- set ns.sf23 = ns.sf23 + 1 -%}{%- set ns.pm23 = ns.pm23 + 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- elif n23 < 0 -%}
+      {%- for qn in range(n23, 0) -%}
+        {%- set ch = letters23[(qn + 1) % 7] -%}
+        {%- if ch == "D" -%}{%- set ns.sf23 = ns.sf23 - 1 -%}
+        {%- elif ch in "CFEAG" -%}{%- set ns.sf23 = ns.sf23 - 1 -%}{%- set ns.pm23 = ns.pm23 - 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {#- 29-limit -#}
+    {%- set pn23 = n23 % 7 -%}
+    {%- set base29 = "CBAGFED" -%}
+    {%- set shift29 = base29.find(letters23[pn23]) -%}
+    {%- set letters29 = base29[shift29:] ~ base29[:shift29] -%}
+    {%- set ns.sf29 = 0 -%}
+    {%- set ns.pm29 = 0 -%}
+    {%- set ns.a29 = n29 -%}
+    {%- if n29 > 0 -%}
+      {%- for qn in range(n29, 0, -1) -%}
+        {%- set ch = letters29[(qn - 1) % 7] -%}
+        {%- if ch in "GBD" -%}{%- set ns.pm29 = ns.pm29 + 1 -%}
+        {%- elif ch in "CF" -%}{%- set ns.sf29 = ns.sf29 - 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- elif n29 < 0 -%}
+      {%- for qn in range(n29, 0) -%}
+        {%- set ch = letters29[(qn + 1) % 7] -%}
+        {%- if ch in "CFA" -%}{%- set ns.pm29 = ns.pm29 - 1 -%}
+        {%- elif ch in "BE" -%}{%- set ns.sf29 = ns.sf29 + 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {#- 31-limit -#}
+    {%- set pn29 = n29 % 7 -%}
+    {%- set base31 = "CBAGFED" -%}
+    {%- set shift31 = base31.find(letters29[pn29]) -%}
+    {%- set letters31 = base31[shift31:] ~ base31[:shift31] -%}
+    {%- set ns.sf31 = 0 -%}
+    {%- set ns.pm31 = 0 -%}
+    {%- set ns.a31 = n31 -%}
+    {%- if n31 > 0 -%}
+      {%- for qn in range(n31, 0, -1) -%}
+        {%- set ch = letters31[(qn - 1) % 7] -%}
+        {%- if ch in "GBD" -%}{%- set ns.sf31 = ns.sf31 + 1 -%}{%- set ns.pm31 = ns.pm31 + 1 -%}
+        {%- elif ch in "EA" -%}{%- set ns.sf31 = ns.sf31 + 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- elif n31 < 0 -%}
+      {%- for qn in range(n31, 0) -%}
+        {%- set ch = letters31[(qn + 1) % 7] -%}
+        {%- if ch in "CFA" -%}{%- set ns.pm31 = ns.pm31 - 1 -%}{%- set ns.sf31 = ns.sf31 - 1 -%}
+        {%- elif ch in "GD" -%}{%- set ns.sf31 = ns.sf31 - 1 -%}{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+
+    {%- set pn31 = n31 % 7 -%}
+    {%- set letter = letters31[pn31] -%}
+    {%- set sf = ns.sf3 + ns.sf5 + ns.sf7 + ns.sf11 + ns.sf13 + ns.sf17 + ns.sf19 + ns.sf23 + ns.sf29 + ns.sf31 -%}
+    {%- set pm = ns.pm3 + ns.pm5 + ns.pm7 + ns.pm11 + ns.pm13 + ns.pm19 + ns.pm23 + ns.pm29 + ns.pm31 -%}
+
+    {%- set out = namespace(s=letter) -%}
+    {%- if sf > 0 -%}{%- set out.s = out.s ~ ("#" * sf) -%}{%- elif sf < 0 -%}{%- set out.s = out.s ~ ("b" * (-sf)) -%}{%- endif -%}
+    {%- if ns.sl > 0 -%}{%- set out.s = out.s ~ ("7" * ns.sl) -%}{%- elif ns.sl < 0 -%}{%- set out.s = out.s ~ ("L" * (-ns.sl)) -%}{%- endif -%}
+    {%- if ns.ud > 0 -%}{%- set out.s = out.s ~ ("^" * ns.ud) -%}{%- elif ns.ud < 0 -%}{%- set out.s = out.s ~ ("v" * (-ns.ud)) -%}{%- endif -%}
+    {%- if ns.e3 > 0 -%}{%- set out.s = out.s ~ ("3" * ns.e3) -%}{%- elif ns.e3 < 0 -%}{%- set out.s = out.s ~ ("e" * (-ns.e3)) -%}{%- endif -%}
+    {%- if ns.a17 > 0 -%}{%- set out.s = out.s ~ ("17" * ns.a17) -%}{%- elif ns.a17 < 0 -%}{%- set out.s = out.s ~ ("v17" * (-ns.a17)) -%}{%- endif -%}
+    {%- if ns.a19 > 0 -%}{%- set out.s = out.s ~ ("19" * ns.a19) -%}{%- elif ns.a19 < 0 -%}{%- set out.s = out.s ~ ("v19" * (-ns.a19)) -%}{%- endif -%}
+    {%- if ns.a23 > 0 -%}{%- set out.s = out.s ~ ("23" * ns.a23) -%}{%- elif ns.a23 < 0 -%}{%- set out.s = out.s ~ ("v23" * (-ns.a23)) -%}{%- endif -%}
+    {%- if ns.a29 > 0 -%}{%- set out.s = out.s ~ ("29" * ns.a29) -%}{%- elif ns.a29 < 0 -%}{%- set out.s = out.s ~ ("v29" * (-ns.a29)) -%}{%- endif -%}
+    {%- if ns.a31 > 0 -%}{%- set out.s = out.s ~ ("31" * ns.a31) -%}{%- elif ns.a31 < 0 -%}{%- set out.s = out.s ~ ("v31" * (-ns.a31)) -%}{%- endif -%}
+    {%- if pm > 0 -%}{%- set out.s = out.s ~ ("+" * pm) -%}{%- elif pm < 0 -%}{%- set out.s = out.s ~ ("-" * (-pm)) -%}{%- endif -%}
+    {%- set vals = [sf, pm, ns.sl, ns.ud, ns.e3, ns.a17, ns.a19, ns.a23, ns.a29, ns.a31] -%}
+    {%- set over = namespace(flag=false) -%}
+    {%- for v in vals -%}
+      {%- if v > 4 or v < -4 -%}{%- set over.flag = true -%}{%- endif -%}
+    {%- endfor -%}
+    {%- if over.flag -%}
+{{ out.s }}
+({{ letter }} {{ sf }} {{ ns.sl }} {{ ns.ud }} {{ ns.e3 }} {{ ns.a17 }} {{ ns.a19 }} {{ ns.a23 }} {{ ns.a29 }} {{ ns.a31 }} {{ pm }})
+    {%- else -%}
+{{ out.s }}
+    {%- endif -%}
+  {%- endif -%}
+{%- endif -%}

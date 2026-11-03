@@ -1,0 +1,97 @@
+---
+- name: 31-Limit Ben Johnston Jinja2 Shadow Fuzzing
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    binary_path: "{{ playbook_dir }}/../target/debug/thirteen-limit-johnston"
+    canonical_ratios:
+      - "1/1"
+      - "3/2"
+      - "5/4"
+      - "7/4"
+      - "11/8"
+      - "13/8"
+      - "17/16"
+      - "19/16"
+      - "23/16"
+      - "29/16"
+      - "31/16"
+      - "49/55"
+      - "16/23"
+      - "2431/1024"
+      - "16807/4096"
+      - "37/16"
+      - "41/32"
+    fuzz_seeds: [101, 202, 303, 404, 505, 606, 707, 808, 909, 1010]
+
+  tasks:
+    - name: Verify canonical and edge-case ratios against Jinja2 shadow calculator
+      ansible.builtin.command:
+        argv:
+          - "{{ binary_path }}"
+          - "{{ item }}"
+      loop: "{{ canonical_ratios }}"
+      register: canonical_runs
+      changed_when: false
+
+    - name: Assert Rust binary matches pure-Jinja2 shadow calculator on canonical ratios
+      ansible.builtin.assert:
+        that:
+          - item.stdout == (item.item | jinja2_johnston)
+        fail_msg: >-
+          Mismatch for {{ item.item }}:
+          Rust returned '{{ item.stdout }}',
+          Jinja2 returned '{{ item.item | jinja2_johnston }}'
+        success_msg: "{{ item.item }} -> {{ item.stdout | replace('\n', ' ') }}"
+      loop: "{{ canonical_runs.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Synthesize 31-limit smooth fuzz ratios via Jinja2 filter
+      ansible.builtin.set_fact:
+        fuzz_ratios: "{{ fuzz_seeds | map('smooth_31_ratio') | list }}"
+
+    - name: Run Rust binary on synthesized 31-limit smooth ratios
+      ansible.builtin.command:
+        argv:
+          - "{{ binary_path }}"
+          - "{{ item }}"
+      loop: "{{ fuzz_ratios }}"
+      register: fuzz_runs
+      changed_when: false
+
+    - name: Run Rust binary on inverted 31-limit smooth ratios
+      ansible.builtin.command:
+        argv:
+          - "{{ binary_path }}"
+          - "{{ item | invert_ratio }}"
+      loop: "{{ fuzz_ratios }}"
+      register: inverted_fuzz_runs
+      changed_when: false
+
+    - name: Assert differential equivalence and harmonic inversion
+      vars:
+        forward_vec: "{{ item.0.stdout | prime_accidental_vector }}"
+        inverse_vec: "{{ item.1.stdout | prime_accidental_vector }}"
+      ansible.builtin.assert:
+        that:
+          - item.0.stdout == (item.0.item | jinja2_johnston)
+          - item.1.stdout == ((item.0.item | invert_ratio) | jinja2_johnston)
+          - (forward_vec[0] | int) + (inverse_vec[0] | int) == 0
+          - (forward_vec[1] | int) + (inverse_vec[1] | int) == 0
+          - (forward_vec[2] | int) + (inverse_vec[2] | int) == 0
+          - (forward_vec[3] | int) + (inverse_vec[3] | int) == 0
+          - (forward_vec[4] | int) + (inverse_vec[4] | int) == 0
+          - (forward_vec[5] | int) + (inverse_vec[5] | int) == 0
+          - (forward_vec[6] | int) + (inverse_vec[6] | int) == 0
+          - (forward_vec[7] | int) + (inverse_vec[7] | int) == 0
+        fail_msg: >-
+          Fuzz mismatch on {{ item.0.item }}:
+          Rust='{{ item.0.stdout }}', Jinja2='{{ item.0.item | jinja2_johnston }}'
+        success_msg: >-
+          {{ item.0.item }} ({{ item.0.stdout | replace('\n', ' ') }})
+          <-> {{ item.0.item | invert_ratio }} ({{ item.1.stdout | replace('\n', ' ') }})
+      loop: "{{ fuzz_runs.results | zip(inverted_fuzz_runs.results) | list }}"
+      loop_control:
+        label: "{{ item.0.item }}"

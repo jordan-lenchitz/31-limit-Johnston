@@ -31,6 +31,13 @@ outputs consist of a letter name plus some combination of `#b7L^v3e+-` and the h
 - `17`, `19`, `23`, `29`, `31` = 17-, 19-, 23-, 29-, and 31-limit accidentals
 - `v17`, `v19`, `v23`, `v29`, `v31` = upside down 17, 19, 23, 29, and 31
 
+## ci / shadow fuzzing
+
+- includes an ansible playbook (`ansible/shadow_fuzz.yml`) run in github actions
+- re-implements the full 31-limit johnston algorithm in pure jinja2 (`ansible/templates/jinja2_johnston.j2`)
+- synthesizes 31-limit smooth ratios via custom jinja2 filters (`ansible/filter_plugins/johnston_ji.py`)
+- verifies differential equivalence between the rust binary and the jinja2 shadow calculator, plus harmonic inversion between `x/y` and `y/x`
+
 ## references
 
 john fonville's article from 1991:
